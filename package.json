@@ -1,0 +1,7 @@
+{
+  "name": "WindTwitter",
+  "version": "1.0.0",
+  "description": "Retweet Wind's promotional tweets so I don't have to",
+  "author": "Ryna Perry-Nguyen",
+  "main": "main.js"
+}
