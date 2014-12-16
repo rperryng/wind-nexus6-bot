@@ -1,4 +1,5 @@
 var Twit = require('twit'),
+  moment = require('moment'),
   config = require('./config.js');
 var ONE_MINUTE_IN_MILLIS = 60000;
 
@@ -12,7 +13,7 @@ function checkForPromotionalTweet() {
   var endpoint = 'statuses/user_timeline';
   var params = {
     screen_name: 'WINDmobile',
-    count: 20,
+    count: 10,
     include_rts: false,
     exclude_replies: true
   };
@@ -24,27 +25,44 @@ function checkForPromotionalTweet() {
     }
 
     data.forEach(function (tweet, index) {
-      console.log(index + ' - ' + tweet.id + ': ' + tweet.text);
-
-      var text = tweet.text;
-      var keyWords = ['5', 'min', '#Nexus', '#BirthdayGift'];
-      var hasAllKeywords = keyWords.every(function (keyword) {
-        var isValid = text.indexOf(keyword) > -1;
-
-        if (!isValid) {
-          console.log('couldn\'t find', keyword);
-        }
-        return isValid;
-      });
-
-      if (hasAllKeywords) {
-        retweet(tweet.id);
+      var validTweet = isTweetValid(tweet, index);
+      if (validTweet) {
+        retweet(tweet.id_str);
       }
-
-      // newline for readability
-      console.log();
     });
   });
+}
+
+function isTweetValid(tweet, index) {
+  console.log();
+  console.log(index + ' - ' + tweet.id_str + '-' + tweet.created_at + ': ' + tweet.text);
+
+  var text = tweet.text;
+  var keyWords = ['5', 'min', '#Nexus', '#BirthdayGift'];
+  var hasAllKeywords = keyWords.every(function (keyword) {
+    var isValid = text.indexOf(keyword) > -1;
+
+    if (!isValid) {
+      console.log('couldn\'t find', keyword);
+    }
+    return isValid;
+  });
+
+  if (!hasAllKeywords) {
+    return false;
+  }
+
+  var timestamp = /(\d\d:\d\d:\d\d)/.exec(tweet.created_at)[0];
+  var momentTweet = moment(timestamp, 'HH:MM:SS');
+  var momentFiveMinutesAgo = moment().subtract(5, 'days');
+
+  var validTime = momentTweet.isAfter(momentFiveMinutesAgo);
+
+  if (!validTime) {
+    console.log('time wasn\'t valid');
+  }
+
+  return validTime;
 }
 
 function retweet(id) {
@@ -54,7 +72,7 @@ function retweet(id) {
     id: id
   };
 
-  twitter.post(endpoint, params, function (err, data, response) {
+  twitter.post(endpoint, params, function (err, data) {
     if (err || !data) {
       console.log(err.statusCode, err.message);
       return;

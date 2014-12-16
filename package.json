@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "description": "Retweet Wind's promotional tweets so I don't have to",
   "author": "Ryna Perry-Nguyen",
-  "main": "main.js"
+  "main": "main.js",
+  "dependencies": {
+    "moment": "^2.8.4",
+    "twit": "^1.1.18"
+  }
 }
