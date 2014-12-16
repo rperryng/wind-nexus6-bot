@@ -17,22 +17,17 @@ function checkForPromotionalTweet() {
     exclude_replies: true
   };
 
-
   twitter.get(endpoint, params, function (err, data) {
-
-    console.log('got', data.length, 'results');
 
     if (err || !data) {
       return;
     }
 
     data.forEach(function (tweet, index) {
-//      console.log(index + ' - ' + tweet.id + ': ' + tweet.text);
+      console.log(index + ' - ' + tweet.id + ': ' + tweet.text);
 
       var text = tweet.text;
-
-      var keyWords = ['5', 'min', '#Nexus6', '#BirthdayGift'];
-
+      var keyWords = ['5', 'min', '#Nexus', '#BirthdayGift'];
       var hasAllKeywords = keyWords.every(function (keyword) {
         var isValid = text.indexOf(keyword) > -1;
 
@@ -42,11 +37,29 @@ function checkForPromotionalTweet() {
         return isValid;
       });
 
+      if (hasAllKeywords) {
+        retweet(tweet.id);
+      }
 
-
-      console.log('text: ' + tweet.text);
-      console.log('isValid: ' + hasAllKeywords);
+      // newline for readability
       console.log();
     });
+  });
+}
+
+function retweet(id) {
+  console.log('attempting to retweet with id', id);
+  var endpoint = 'statuses/retweet/:id';
+  var params = {
+    id: id
+  };
+
+  twitter.post(endpoint, params, function (err, data, response) {
+    if (err || !data) {
+      console.log(err.statusCode, err.message);
+      return;
+    }
+
+    console.log('success! Retweeted - ' + data.text);
   });
 }
